@@ -12,15 +12,26 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         packages = with pkgs; [ tmux tmuxp ];
+
+        tmux-conf = pkgs.tmux.overrideAttrs (oldAttrs: {
+          buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ pkgs.makeWrapper ];
+
+          postInstall = (oldAttrs.postInstall or "") + ''
+            mkdir $out/libexec
+
+            mv $out/bin/tmux $out/libexec/tmux-unwrapped
+
+            makeWrapper $out/libexec/tmux-unwrapped $out/bin/tmux \
+              --add-flags "-f ${
+                pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf)
+              }"
+          '';
+        });
+
       in {
         devShells.default = pkgs.mkShell { inherit packages; };
 
-        packages.default = pkgs.tmuxp;
-
-        # apps.${system}.default = {
-        #   type = "app";
-        #   program = pkgs.tmux;
-        # };
+        packages.default = tmux-conf;
 
         # formatter.${system} = pkgs.nixfmt;
       });
