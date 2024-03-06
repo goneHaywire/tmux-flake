@@ -29,7 +29,7 @@
         });
 
       in {
-        devShells.default = pkgs.mkShell { inherit packages; };
+        devShells.default = pkgs.mkShell { packages = [tmux-conf pkgs.tmuxp]; };
 
         packages.default = tmux-conf;
 
