@@ -5,36 +5,34 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
 
     flake-utils.url = "github:numtide/flake-utils";
+
+    # add personal nushell flake
+    # add personal tmuxp flake
   };
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        packages = with pkgs; [ tmux tmuxp nushell];
 
-        tmux-conf-file = pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
+        tmux-conf-file =
+          pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
 
-        tmux-wrapper = pkgs.writeShellApplication {
-          name = "tmux-wrapper";
-          runtimeInputs = packages ++ [tmux-conf-file];
+        my-tmux = pkgs.writeShellApplication {
+          name = "my-tmux";
+          runtimeInputs = with pkgs; [tmux tmuxp nushell];
           text = "tmux -f ${tmux-conf-file}";
         };
 
       in {
         devShells.default = pkgs.mkShell {
-          # packages = [ tmux-wrapper pkgs.tmuxp ];
+          packages = [my-tmux] ++ (with pkgs; [tmuxp nushell]);
 
-          shellhook = "${tmux-wrapper}/bin/tmux-wrapper";
+          shellhook = "tmux";
         };
 
-        packages.default = tmux-wrapper;
-
-        apps.default = {
-          type = "app";
-          program = "${tmux-wrapper}/bin/tmux-wrapper";
-        };
-
-        # formatter.${system} = pkgs.nixfmt;
+        packages.tmux = my-tmux;
+        packages.old-tmux = pkgs.tmux;
+        packages.default = self.packages.${system}.tmux;
       });
 }
