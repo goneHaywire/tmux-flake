@@ -13,25 +13,27 @@
         pkgs = nixpkgs.legacyPackages.${system};
         packages = with pkgs; [ tmux tmuxp ];
 
-        tmux-conf = pkgs.tmux.overrideAttrs (oldAttrs: {
-          buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ pkgs.makeWrapper ];
+        tmux-conf-file = pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
 
-          postInstall = (oldAttrs.postInstall or "") + ''
-            mkdir $out/libexec
-
-            mv $out/bin/tmux $out/libexec/tmux-unwrapped
-
-            makeWrapper $out/libexec/tmux-unwrapped $out/bin/tmux \
-              --add-flags "-f ${
-                pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf)
-              }"
-          '';
-        });
+        tmux-wrapper = pkgs.writeShellApplication {
+          name = "tmux-wrapper";
+          runtimeInputs = packages;
+          text = "tmux -f ${tmux-conf-file}";
+        };
 
       in {
-        devShells.default = pkgs.mkShell { packages = [tmux-conf pkgs.tmuxp]; };
+        devShells.default = pkgs.mkShell {
+          packages = [ tmux-wrapper pkgs.tmuxp ];
 
-        packages.default = tmux-conf;
+          shellhook = "tmux";
+        };
+
+        packages.default = tmux-wrapper;
+
+        apps.default = {
+          type = "app";
+          program = "${tmux-wrapper}/bin/tmux-wrapper";
+        };
 
         # formatter.${system} = pkgs.nixfmt;
       });
