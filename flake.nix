@@ -26,13 +26,13 @@
 
       in {
         devShells.default = pkgs.mkShell {
-          packages = [my-tmux] ++ (with pkgs; [tmuxp nushell starship]);
+          packages = [my-tmux pkgs.tmuxp];
 
-          # shellhook = "${my-tmux}/bin/tmux";
+          shellhook = "${my-tmux}/bin/tmux";
         };
 
         packages.tmux = my-tmux;
         packages.old-tmux = pkgs.tmux;
-        packages.default = self.packages.${system}.tmux;
+        packages.default = my-tmux;
       });
 }
