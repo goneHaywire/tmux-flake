@@ -18,7 +18,7 @@
         tmux-wrapper = pkgs.writeShellApplication {
           name = "tmux-wrapper";
           runtimeInputs = packages ++ [tmux-conf-file];
-          text = "${pkgs.tmux} -f ${tmux-conf-file}";
+          text = "tmux -f ${tmux-conf-file}";
         };
 
       in {
