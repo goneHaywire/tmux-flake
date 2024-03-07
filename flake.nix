@@ -11,21 +11,21 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        packages = with pkgs; [ tmux tmuxp ];
+        packages = with pkgs; [ tmux tmuxp nushell];
 
         tmux-conf-file = pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
 
         tmux-wrapper = pkgs.writeShellApplication {
           name = "tmux-wrapper";
-          runtimeInputs = [pkgs.tmux pkgs.tmuxp tmux-conf-file];
+          runtimeInputs = packages ++ [tmux-conf-file];
           text = "${pkgs.tmux} -f ${tmux-conf-file}";
         };
 
       in {
         devShells.default = pkgs.mkShell {
-          packages = [ tmux-wrapper pkgs.tmuxp ];
+          # packages = [ tmux-wrapper pkgs.tmuxp ];
 
-          shellhook = "tmux";
+          shellhook = "${tmux-wrapper}/bin/tmux-wrapper";
         };
 
         packages.default = tmux-wrapper;
