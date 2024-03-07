@@ -19,16 +19,16 @@
           pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
 
         my-tmux = pkgs.writeShellApplication {
-          name = "my-tmux";
-          runtimeInputs = with pkgs; [tmux tmuxp nushell];
+          name = "tmux";
+          runtimeInputs = with pkgs; [tmux tmuxp nushell starship];
           text = "tmux -f ${tmux-conf-file}";
         };
 
       in {
         devShells.default = pkgs.mkShell {
-          packages = [my-tmux] ++ (with pkgs; [tmuxp nushell]);
+          packages = [my-tmux] ++ (with pkgs; [tmuxp nushell starship]);
 
-          shellhook = "tmux";
+          # shellhook = "${my-tmux}/bin/tmux";
         };
 
         packages.tmux = my-tmux;
