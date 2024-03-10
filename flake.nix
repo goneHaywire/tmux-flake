@@ -6,7 +6,9 @@
 
     flake-utils.url = "github:numtide/flake-utils";
 
+    # TODO:
     # add personal nushell flake
+    # add personal starship flake
     # add personal tmuxp flake
   };
 
@@ -18,6 +20,7 @@
         tmux-conf-file =
           pkgs.writeText "tmux.conf" (builtins.readFile ./tmux.conf);
 
+        # TODO: alternative build method to keep manpage
         my-tmux = pkgs.writeShellApplication {
           name = "tmux";
           runtimeInputs = with pkgs; [tmux tmuxp nushell starship];
@@ -25,14 +28,6 @@
         };
 
       in {
-        devShells.default = pkgs.mkShell {
-          packages = [my-tmux pkgs.tmuxp];
-
-          shellhook = "${my-tmux}/bin/tmux";
-        };
-
-        packages.tmux = my-tmux;
-        packages.old-tmux = pkgs.tmux;
         packages.default = my-tmux;
       });
 }
