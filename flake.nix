@@ -12,7 +12,7 @@
     # add personal tmuxp flake
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, home-manager }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -27,7 +27,13 @@
           text = "tmux -f ${tmux-conf-file}";
         };
 
+        my-shell = pkgs.mkShell {
+          name = "test-shell";
+          packages = [my-tmux pkgs.zsh pkgs.fzf];
+        };
       in {
-        packages.default = my-tmux;
+        packages.tmux = my-tmux;
+        packages.zsh = pkgs.zsh;
+        devShells.my-shell = my-shell;
       });
 }
